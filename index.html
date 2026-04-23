@@ -1,59 +1,325 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Journal Pro | Minimalist Edition</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- Fuentes: Cursiva elegante y Sans-serif moderna -->
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper-bg: #fdfaf3;
+            --text-color: #3e3e3e;
+            --accent: #8e8d8a;
+            --glass: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --pencil-gray: #4a4a4a;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #e2e2e2;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Contenedor Principal */
+        .app-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            height: 100%;
+            background-color: var(--paper-bg);
+            box-shadow: 0 0 50px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            filter: sepia(0.1) contrast(0.98);
+        }
+
+        @media (min-width: 500px) {
+            .app-container {
+                height: 94vh;
+                border-radius: 40px;
+            }
+        }
+
+        /* Texturas de Papel Punteado */
+        .paper-texture {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.3;
+            mix-blend-mode: multiply;
+            background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
+            z-index: 1;
+        }
+
+        .dot-grid {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.1;
+            background-image: radial-gradient(var(--text-color) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+            background-position: 15px 15px;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            position: relative;
+            z-index: 40;
+            padding: 35px 25px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.4s ease;
+        }
+
+        header.hidden { opacity: 0; pointer-events: none; }
+
+        .header-center { flex: 1; margin: 0 15px; text-align: center; }
+
+        .date-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .title-input {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--accent);
+            padding: 8px;
+            display: flex;
+        }
+
+        /* Main Area */
+        main { position: relative; flex: 1; overflow: hidden; }
+
+        .margin-line {
+            position: absolute;
+            left: 45px; top: 0; bottom: 0;
+            width: 1px;
+            background: rgba(255, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        textarea {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            resize: none;
+            padding: 15px 25px 160px 60px;
+            font-family: 'Dancing Script', cursive;
+            font-size: 28px;
+            line-height: 42px;
+            color: var(--text-color);
+            z-index: 5;
+            transition: opacity 0.3s ease;
+        }
+
+        textarea.dimmed { opacity: 0.15; pointer-events: none; }
+
+        canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            touch-action: none;
+        }
+
+        canvas.inactive { pointer-events: none; }
+
+        /* Nav Flotante Glassmorphism */
+        .floating-nav {
+            position: absolute;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .drawing-tools {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 30px;
+            padding: 12px 20px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+
+        .drawing-tools.hidden { transform: translateY(30px) scale(0.9); opacity: 0; pointer-events: none; }
+
+        .palette { display: flex; gap: 8px; }
+        .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .color-dot.active { transform: scale(1.4); }
+
+        .brush-selector { display: flex; gap: 14px; align-items: center; color: var(--text-color); }
+        .tool-btn { background: transparent; border: none; opacity: 0.35; cursor: pointer; display: flex; transition: opacity 0.2s; padding: 4px; }
+        .tool-btn.active { opacity: 1; }
+        .separator { width: 1px; height: 16px; background: rgba(0,0,0,0.1); }
+
+        .action-bar {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-radius: 50px;
+            padding: 15px;
+            border: 1px solid var(--glass-border);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.1);
+        }
+
+        .nav-item { display: flex; justify-content: center; }
+
+        .nav-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-circle.active { background: var(--text-color); color: white; border-color: transparent; }
+        .nav-circle.glass-solid { background: rgba(255, 255, 255, 0.3); color: var(--text-color); }
+
+        /* Sidebar */
+        .sidebar {
+            position: absolute;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.active { opacity: 1; pointer-events: auto; }
+
+        .menu-content {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 80%;
+            background: var(--paper-bg);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.active .menu-content { transform: translateX(0); }
+
+        .menu-header {
+            padding: 35px 25px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .menu-label { font-size: 11px; font-weight: 700; letter-spacing: 4px; color: var(--accent); }
+
+        .menu-list { flex: 1; overflow-y: auto; padding: 20px; }
+
+        .note-item {
+            padding: 22px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 25px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0,0,0,0.03);
+            cursor: pointer;
+        }
+
+        .note-item h4 { margin: 0 0 5px; font-size: 16px; color: var(--text-color); }
+        .note-item span { font-size: 10px; font-weight: bold; color: var(--accent); text-transform: uppercase; }
+    </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- Texturas de fondo -->
         <div class="paper-texture"></div>
         <div class="dot-grid"></div>
 
-        <!-- Menú Lateral de Notas -->
         <div id="sidebar" class="sidebar">
             <div class="menu-content">
                 <div class="menu-header">
                     <span class="menu-label">MEMORIAS</span>
                     <button id="closeMenu" class="icon-btn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                 </div>
-                <div id="menuList" class="menu-list">
-                    <!-- Las notas se cargan aquí desde JS -->
-                </div>
+                <div id="menuList" class="menu-list"></div>
             </div>
         </div>
 
-        <!-- Cabecera Superior -->
         <header id="appHeader">
             <button id="openMenu" class="icon-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
             <div class="header-center">
                 <span id="dateDisplay" class="date-label"></span>
-                <input type="text" id="noteTitle" class="title-input" placeholder="Sin título">
+                <input type="text" id="noteTitle" class="title-input" placeholder="Título">
             </div>
             <button id="newNote" class="icon-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </button>
         </header>
 
-        <!-- Zona Principal (Escritura y Dibujo) -->
         <main id="container">
             <div class="margin-line"></div>
             <textarea id="journalText" placeholder="Escribe con libertad..."></textarea>
             <canvas id="drawingCanvas" class="inactive"></canvas>
         </main>
 
-        <!-- Navegación Flotante Glassmorphism -->
         <nav class="floating-nav">
-            <!-- Selector de Herramientas (visible en modo dibujo) -->
             <div id="drawingTools" class="drawing-tools hidden">
                 <div class="palette">
                     <div class="color-dot active" data-color="#3e3e3e" style="background: #3e3e3e;"></div>
@@ -65,41 +331,270 @@
                 </div>
                 <div class="brush-selector">
                     <button id="setPen" class="tool-btn active">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
                     </button>
                     <button id="setPencil" class="tool-btn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                     </button>
                     <div class="separator"></div>
-                    <button id="undoBtn" class="tool-btn" style="opacity: 1;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                    <button id="undoBtn" class="tool-btn" style="opacity:1">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
                     </button>
                 </div>
             </div>
 
-            <!-- Barra de Acciones Principal -->
             <div class="action-bar">
                 <div class="nav-item">
                     <button id="toggleDraw" class="nav-circle">
-                        <svg id="drawIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
-                        <svg id="textIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+                        <svg id="drawIcon" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
+                        <svg id="textIcon" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
                     </button>
                 </div>
                 <div class="nav-item">
                     <button id="saveNote" class="nav-circle glass-solid">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                     </button>
                 </div>
                 <div class="nav-item">
                     <button id="deleteNote" class="nav-circle">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
                 </div>
             </div>
         </nav>
     </div>
 
-    <script src="app.js"></script>
+    <script>
+        // --- BASE DE DATOS ---
+        let db;
+        let currentNoteId = null;
+        const dbRequest = indexedDB.open("JournalProV2", 1);
+        dbRequest.onupgradeneeded = e => {
+            db = e.target.result;
+            db.createObjectStore("entries", { keyPath: "id", autoIncrement: true });
+        };
+        dbRequest.onsuccess = e => {
+            db = e.target.result;
+            updateMenuList();
+            setupDate();
+        };
+
+        // --- CONFIGURACIÓN DE LIENZO ---
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('container');
+        let isDrawing = false;
+        let brushType = 'pen';
+        let selectedColor = '#3e3e3e';
+        let undoStack = [];
+
+        function resize() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            ctx.scale(dpr, dpr);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            updateBrush();
+            if(undoStack.length > 0) {
+                const img = new Image();
+                img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
+                img.src = undoStack[undoStack.length-1];
+            }
+        }
+
+        function updateBrush() {
+            ctx.strokeStyle = selectedColor;
+            if (brushType === 'pencil') {
+                ctx.globalAlpha = 0.12;
+                ctx.lineWidth = 1.2;
+                ctx.shadowBlur = 0.6;
+                ctx.shadowColor = selectedColor;
+            } else {
+                ctx.globalAlpha = 1.0;
+                ctx.lineWidth = 3.5;
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+
+        // --- EVENTOS ---
+        const start = e => {
+            if(canvas.classList.contains('inactive')) return;
+            isDrawing = true;
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        };
+
+        const move = e => {
+            if(!isDrawing) return;
+            if(e.touches) e.preventDefault();
+            const pos = getPos(e);
+            if(brushType === 'pencil') {
+                const jX = (Math.random() - 0.5) * 1.1;
+                const jY = (Math.random() - 0.5) * 1.1;
+                ctx.lineTo(pos.x + jX, pos.y + jY);
+            } else {
+                ctx.lineTo(pos.x, pos.y);
+            }
+            ctx.stroke();
+        };
+
+        const end = () => {
+            if(!isDrawing) return;
+            isDrawing = false;
+            ctx.closePath();
+            undoStack.push(canvas.toDataURL());
+        };
+
+        canvas.addEventListener('mousedown', start);
+        canvas.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', end);
+        canvas.addEventListener('touchstart', start, {passive: false});
+        canvas.addEventListener('touchmove', move, {passive: false});
+        canvas.addEventListener('touchend', end);
+
+        // --- UI ---
+        const toggleBtn = document.getElementById('toggleDraw');
+        const drawTools = document.getElementById('drawingTools');
+        const journalText = document.getElementById('journalText');
+        const appHeader = document.getElementById('appHeader');
+
+        toggleBtn.onclick = () => {
+            const active = canvas.classList.toggle('inactive');
+            document.getElementById('drawIcon').style.display = active ? 'block' : 'none';
+            document.getElementById('textIcon').style.display = active ? 'none' : 'block';
+            toggleBtn.classList.toggle('active', !active);
+            journalText.classList.toggle('dimmed', !active);
+            drawTools.classList.toggle('hidden', active);
+            appHeader.classList.toggle('hidden', !active);
+        };
+
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.onclick = () => {
+                document.querySelector('.color-dot.active').classList.remove('active');
+                dot.classList.add('active');
+                selectedColor = dot.dataset.color;
+                updateBrush();
+            };
+        });
+
+        document.getElementById('setPen').onclick = () => {
+            brushType = 'pen';
+            document.getElementById('setPen').classList.add('active');
+            document.getElementById('setPencil').classList.remove('active');
+            updateBrush();
+        };
+
+        document.getElementById('setPencil').onclick = () => {
+            brushType = 'pencil';
+            document.getElementById('setPencil').classList.add('active');
+            document.getElementById('setPen').classList.remove('active');
+            updateBrush();
+        };
+
+        document.getElementById('undoBtn').onclick = () => {
+            if(undoStack.length <= 1) {
+                ctx.clearRect(0,0, canvas.width, canvas.height);
+                undoStack = [];
+                return;
+            }
+            undoStack.pop();
+            const img = new Image();
+            img.onload = () => {
+                ctx.clearRect(0,0, canvas.width/devicePixelRatio, canvas.height/devicePixelRatio);
+                ctx.drawImage(img, 0, 0, canvas.width/devicePixelRatio, canvas.height/devicePixelRatio);
+            };
+            img.src = undoStack[undoStack.length-1];
+        };
+
+        // --- PERSISTENCIA ---
+        const saveBtn = document.getElementById('saveNote');
+        saveBtn.onclick = () => {
+            const tx = db.transaction("entries", "readwrite");
+            const store = tx.objectStore("entries");
+            const data = {
+                title: document.getElementById('noteTitle').value || "Sin título",
+                content: journalText.value,
+                drawing: canvas.toDataURL(),
+                date: document.getElementById('dateDisplay').innerText,
+                timestamp: Date.now()
+            };
+            if(currentNoteId) data.id = currentNoteId;
+            store.put(data).onsuccess = e => {
+                currentNoteId = currentNoteId || e.target.result;
+                updateMenuList();
+                saveBtn.style.color = "#2ecc71";
+                setTimeout(() => saveBtn.style.color = "", 1000);
+            };
+        };
+
+        document.getElementById('newNote').onclick = () => {
+            currentNoteId = null;
+            document.getElementById('noteTitle').value = "";
+            journalText.value = "";
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            undoStack = [];
+            setupDate();
+        };
+
+        document.getElementById('deleteNote').onclick = () => {
+            if(!currentNoteId) return;
+            if(confirm("¿Borrar esta memoria?")) {
+                const tx = db.transaction("entries", "readwrite");
+                tx.objectStore("entries").delete(currentNoteId).onsuccess = () => location.reload();
+            }
+        };
+
+        const sidebar = document.getElementById('sidebar');
+        document.getElementById('openMenu').onclick = () => sidebar.classList.add('active');
+        document.getElementById('closeMenu').onclick = () => sidebar.classList.remove('active');
+
+        function updateMenuList() {
+            const list = document.getElementById('menuList');
+            list.innerHTML = "";
+            db.transaction("entries").objectStore("entries").getAll().onsuccess = e => {
+                e.target.result.sort((a,b) => b.timestamp - a.timestamp).forEach(note => {
+                    const item = document.createElement('div');
+                    item.className = "note-item";
+                    item.innerHTML = `<h4>${note.title}</h4><span>${note.date}</span>`;
+                    item.onclick = () => {
+                        currentNoteId = note.id;
+                        document.getElementById('noteTitle').value = note.title;
+                        journalText.value = note.content;
+                        document.getElementById('dateDisplay').innerText = note.date;
+                        const img = new Image();
+                        img.onload = () => {
+                            ctx.clearRect(0,0, canvas.width/devicePixelRatio, canvas.height/devicePixelRatio);
+                            ctx.drawImage(img, 0, 0, canvas.width/devicePixelRatio, canvas.height/devicePixelRatio);
+                            undoStack = [note.drawing];
+                        };
+                        img.src = note.drawing;
+                        sidebar.classList.remove('active');
+                    };
+                    list.appendChild(item);
+                });
+            };
+        }
+
+        function setupDate() {
+            const options = { day: 'numeric', month: 'long' };
+            document.getElementById('dateDisplay').innerText = new Date().toLocaleDateString('es-ES', options);
+        }
+
+        window.onload = resize;
+        window.onresize = resize;
+    </script>
 </body>
 </html>
 
