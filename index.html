@@ -3,27 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Journal Diario | Minimal</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#8e8d8a">
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&family=Inter:wght@300&display=swap" rel="stylesheet">
+    <title>Journal Pro | Minimal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&family=Inter:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <main class="app-container">
+        <div id="sideMenu" class="side-menu">
+            <div class="menu-header">
+                <h2>Mis Notas</h2>
+                <button id="closeMenu">✕</button>
+            </div>
+            <div id="entriesList" class="entries-list"></div>
+        </div>
+
         <header class="glass-header">
+            <button id="menuBtn" class="icon-btn">☰</button>
             <h1 class="date-display" id="currentDate"></h1>
-            <div class="status-indicator" id="status">Sincronizado</div>
+            <button id="newNoteBtn" class="icon-btn">✎</button>
         </header>
 
         <section class="notebook-page">
             <div class="margin-line"></div>
-            <textarea id="journalInput" placeholder="Escribe aquí tu pensamiento del día..." spellcheck="false"></textarea>
+            <textarea id="journalInput" placeholder="Escribe aquí..."></textarea>
+            <canvas id="drawingCanvas"></canvas>
             <div class="dots-overlay"></div>
         </section>
 
-        <nav class="bottom-nav">
-            <button id="saveBtn" class="btn-minimal">Guardar Entrada</button>
+        <nav class="glass-footer">
+            <div class="tools-container" id="drawingTools">
+                <div class="color-picker">
+                    <button class="color-dot active" data-color="#3e3e3e" style="background:#3e3e3e"></button>
+                    <button class="color-dot" data-color="#e74c3c" style="background:#e74c3c"></button>
+                    <button class="color-dot" data-color="#3498db" style="background:#3498db"></button>
+                    <button class="color-dot" data-color="#2ecc71" style="background:#2ecc71"></button>
+                    <button id="clearCanvas">✕</button>
+                </div>
+            </div>
+            <div class="nav-controls">
+                <button id="drawModeBtn" class="circle-btn small">✏️</button>
+                <button id="saveBtn" class="circle-btn large">💾</button>
+                <button id="deleteBtn" class="circle-btn small" style="visibility: hidden">🗑️</button>
+            </div>
         </nav>
     </main>
     <script src="app.js"></script>
