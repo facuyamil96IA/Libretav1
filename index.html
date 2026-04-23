@@ -2,24 +2,28 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Diario Personal</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Journal Diario | Minimal</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8e8d8a">
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&family=Inter:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <main class="app-container">
-        <header>
-            <h1 class="date-display" id="currentDate">22 de Abril, 2026</h1>
+        <header class="glass-header">
+            <h1 class="date-display" id="currentDate"></h1>
+            <div class="status-indicator" id="status">Sincronizado</div>
         </header>
 
         <section class="notebook-page">
-            <textarea id="journalInput" placeholder="Querido diario..." spellcheck="false"></textarea>
+            <div class="margin-line"></div>
+            <textarea id="journalInput" placeholder="Escribe aquí tu pensamiento del día..." spellcheck="false"></textarea>
             <div class="dots-overlay"></div>
         </section>
 
         <nav class="bottom-nav">
-            <button id="saveBtn">Guardar Entrada</button>
+            <button id="saveBtn" class="btn-minimal">Guardar Entrada</button>
         </nav>
     </main>
     <script src="app.js"></script>
