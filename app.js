@@ -1,55 +1,69 @@
-const DB_NAME = 'JournalDB';
-const DB_VERSION = 1;
-let db;
+let db, currentId = null;
+const canvas = document.getElementById('drawingCanvas');
+const ctx = canvas.getContext('2d');
+let drawing = false, color = '#3e3e3e';
 
-// Inicialización de IndexedDB
-const request = indexedDB.open(DB_NAME, DB_VERSION);
+// DB Init
+const request = indexedDB.open('JournalProDB', 1);
+request.onupgradeneeded = (e) => { e.target.result.createObjectStore('entries', { keyPath: 'id', autoIncrement: true }); };
+request.onsuccess = (e) => { db = e.target.result; updateMenu(); };
 
-request.onupgradeneeded = (e) => {
-    db = e.target.result;
-    if (!db.objectStoreNames.contains('entries')) {
-        db.createObjectStore('entries', { keyPath: 'date' });
-    }
+// Canvas Logic
+function setupCanvas() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+}
+setupCanvas();
+
+canvas.onmousedown = (e) => { if(!canvas.classList.contains('active')) return; drawing = true; ctx.beginPath(); };
+canvas.onmouseup = () => drawing = false;
+canvas.onmousemove = (e) => {
+    if(!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top); ctx.stroke();
 };
 
-request.onsuccess = (e) => {
-    db = e.target.result;
-    loadTodayEntry();
+// UI Actions
+document.getElementById('drawModeBtn').onclick = () => {
+    canvas.classList.toggle('active');
+    document.getElementById('drawingTools').classList.toggle('active');
 };
 
-// Cargar fecha actual
-const options = { day: 'numeric', month: 'long', year: 'numeric' };
-document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES', options);
-
-function saveEntry() {
-    if (!db) return;
+document.getElementById('saveBtn').onclick = () => {
     const text = document.getElementById('journalInput').value;
-    const date = new Date().toLocaleDateString('es-ES');
-    const status = document.getElementById('status');
+    const drawingData = canvas.toDataURL();
+    const date = document.getElementById('currentDate').innerText;
+    
+    const tx = db.transaction('entries', 'readwrite');
+    const store = tx.objectStore('entries');
+    const entry = { date, text, drawing: drawingData, timestamp: Date.now() };
+    if(currentId) entry.id = currentId;
 
-    const transaction = db.transaction(['entries'], 'readwrite');
-    const store = transaction.objectStore('entries');
-    store.put({ date: date, content: text, lastUpdated: new Date().getTime() });
+    store.put(entry).onsuccess = (e) => { currentId = currentId || e.target.result; updateMenu(); alert('Guardado'); };
+};
 
-    transaction.oncomplete = () => {
-        status.innerText = "Guardado";
-        setTimeout(() => { status.innerText = "Sincronizado"; }, 2000);
+function updateMenu() {
+    const list = document.getElementById('entriesList');
+    list.innerHTML = '';
+    db.transaction('entries').objectStore('entries').getAll().onsuccess = (e) => {
+        e.target.result.forEach(entry => {
+            const item = document.createElement('div');
+            item.innerText = entry.date + " - " + entry.text.substring(0,10);
+            item.onclick = () => {
+                currentId = entry.id;
+                document.getElementById('journalInput').value = entry.text;
+                const img = new Image(); img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
+                img.src = entry.drawing;
+                document.getElementById('sideMenu').classList.remove('active');
+                document.getElementById('deleteBtn').style.visibility = 'visible';
+            };
+            list.appendChild(item);
+        });
     };
 }
 
-function loadTodayEntry() {
-    const date = new Date().toLocaleDateString('es-ES');
-    const transaction = db.transaction(['entries'], 'readonly');
-    const store = transaction.objectStore('entries');
-    const getRequest = store.get(date);
+document.getElementById('menuBtn').onclick = () => document.getElementById('sideMenu').classList.add('active');
+document.getElementById('closeMenu').onclick = () => document.getElementById('sideMenu').classList.remove('active');
 
-    getRequest.onsuccess = () => {
-        if (getRequest.result) {
-            document.getElementById('journalInput').value = getRequest.result.content;
-        }
-    };
-}
-
-// Auto-guardado y evento de botón
-setInterval(saveEntry, 10000);
-document.getElementById('saveBtn').addEventListener('click', saveEntry);
+document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long'});
