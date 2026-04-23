@@ -1,18 +1,55 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const journalInput = document.getElementById('journalInput');
-    const saveBtn = document.getElementById('saveBtn');
+const DB_NAME = 'JournalDB';
+const DB_VERSION = 1;
+let db;
 
-    // Cargar entrada anterior
-    journalInput.value = localStorage.getItem('journal_entry') || "";
+// Inicialización de IndexedDB
+const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    // Guardar al hacer clic
-    saveBtn.addEventListener('click', () => {
-        localStorage.setItem('journal_entry', journalInput.value);
-        alert('Entrada guardada en tu libreta digital.');
-    });
+request.onupgradeneeded = (e) => {
+    db = e.target.result;
+    if (!db.objectStoreNames.contains('entries')) {
+        db.createObjectStore('entries', { keyPath: 'date' });
+    }
+};
 
-    // Auto-guardado opcional cada 30 segundos
-    setInterval(() => {
-        localStorage.setItem('journal_entry', journalInput.value);
-    }, 30000);
-});
+request.onsuccess = (e) => {
+    db = e.target.result;
+    loadTodayEntry();
+};
+
+// Cargar fecha actual
+const options = { day: 'numeric', month: 'long', year: 'numeric' };
+document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES', options);
+
+function saveEntry() {
+    if (!db) return;
+    const text = document.getElementById('journalInput').value;
+    const date = new Date().toLocaleDateString('es-ES');
+    const status = document.getElementById('status');
+
+    const transaction = db.transaction(['entries'], 'readwrite');
+    const store = transaction.objectStore('entries');
+    store.put({ date: date, content: text, lastUpdated: new Date().getTime() });
+
+    transaction.oncomplete = () => {
+        status.innerText = "Guardado";
+        setTimeout(() => { status.innerText = "Sincronizado"; }, 2000);
+    };
+}
+
+function loadTodayEntry() {
+    const date = new Date().toLocaleDateString('es-ES');
+    const transaction = db.transaction(['entries'], 'readonly');
+    const store = transaction.objectStore('entries');
+    const getRequest = store.get(date);
+
+    getRequest.onsuccess = () => {
+        if (getRequest.result) {
+            document.getElementById('journalInput').value = getRequest.result.content;
+        }
+    };
+}
+
+// Auto-guardado y evento de botón
+setInterval(saveEntry, 10000);
+document.getElementById('saveBtn').addEventListener('click', saveEntry);
