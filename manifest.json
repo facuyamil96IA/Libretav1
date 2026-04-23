@@ -1,0 +1,16 @@
+{
+  "name": "Journal Diario Minimalista",
+  "short_name": "Journal",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#fdfaf3",
+  "theme_color": "#8e8d8a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3665/3665923.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
