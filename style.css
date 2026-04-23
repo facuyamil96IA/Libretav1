@@ -1,88 +1,96 @@
 :root {
-    --paper-bg: #fdfaf3; /* Color hueso/crema */
-    --line-color: rgba(0, 0, 0, 0.05);
+    --paper-bg: #fdfaf3;
+    --line-color: rgba(0, 0, 0, 0.06);
     --text-color: #3e3e3e;
     --accent: #8e8d8a;
+    --margin-red: rgba(255, 0, 0, 0.15);
 }
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
     margin: 0;
-    background-color: #e5e5e5; /* Fondo de la mesa */
+    background-color: #e5e5e5;
     font-family: 'Inter', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-}
-
-.app-container {
-    width: 90%;
-    max-width: 500px;
-    height: 85vh;
-    background: var(--paper-bg);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    border-radius: 4px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
     overflow: hidden;
 }
 
-/* Efecto de Renglones */
+.app-container {
+    width: 100%;
+    max-width: 500px;
+    height: 100vh;
+    background: var(--paper-bg);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 0 50px rgba(0,0,0,0.1);
+    filter: sepia(0.2) contrast(0.95) brightness(1.02); /* Filtro Papel Viejo */
+}
+
+@media (min-width: 600px) {
+    .app-container { height: 85vh; border-radius: 8px; }
+}
+
+.glass-header {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.date-display { margin: 0; font-size: 1rem; font-weight: 300; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+
 .notebook-page {
     flex: 1;
     position: relative;
     background-image: linear-gradient(var(--line-color) 1px, transparent 1px);
-    background-size: 100% 2.5rem; /* Altura del renglón */
-    padding: 0 20px;
+    background-size: 100% 2.5rem;
+    padding: 0;
+    overflow: hidden;
 }
 
-/* Textura de puntos (puntilla) */
+.margin-line {
+    position: absolute;
+    left: 45px; top: 0; bottom: 0; width: 2px;
+    background: var(--margin-red);
+    z-index: 2;
+}
+
 .dots-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
     pointer-events: none;
-    background-image: radial-gradient(rgba(0,0,0,0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-    opacity: 0.5;
-}
-
-textarea {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.6rem;
-    line-height: 2.5rem; /* Debe coincidir con background-size */
-    color: var(--text-color);
-    resize: none;
-    padding-top: 0.2rem;
+    background-image: radial-gradient(#8e8d8a 0.8px, transparent 0.8px);
+    background-size: 25px 25px;
+    opacity: 0.15;
     z-index: 1;
 }
 
-/* Interfaz Limpia */
-.bottom-nav {
-    padding: 20px;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(5px); /* Toque de glassmorphism */
+textarea {
+    width: 100%; height: 100%;
+    background: transparent; border: none; outline: none;
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.7rem; line-height: 2.5rem;
+    color: var(--text-color);
+    resize: none;
+    padding: 0.2rem 20px 0 60px;
+    position: relative; z-index: 3;
+    letter-spacing: -0.5px;
 }
 
-#saveBtn {
-    background: transparent;
-    border: 1px solid var(--accent);
-    padding: 8px 24px;
-    border-radius: 20px;
-    font-family: 'Inter';
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: 0.3s;
-}
+.bottom-nav { padding: 25px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(8px); text-align: center; }
 
-#saveBtn:hover {
-    background: var(--accent);
-    color: white;
+.btn-minimal {
+    background: transparent; border: 1px solid var(--accent);
+    padding: 10px 30px; border-radius: 30px;
+    font-size: 0.8rem; letter-spacing: 1px; color: var(--accent);
+    cursor: pointer; transition: all 0.3s ease;
 }
