@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Diario Personal</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&family=Inter:wght@300&display=swap" rel="stylesheet">
+</head>
+<body>
+    <main class="app-container">
+        <header>
+            <h1 class="date-display" id="currentDate">22 de Abril, 2026</h1>
+        </header>
+
+        <section class="notebook-page">
+            <textarea id="journalInput" placeholder="Querido diario..." spellcheck="false"></textarea>
+            <div class="dots-overlay"></div>
+        </section>
+
+        <nav class="bottom-nav">
+            <button id="saveBtn">Guardar Entrada</button>
+        </nav>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>
